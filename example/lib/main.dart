@@ -50,7 +50,12 @@ class MyAppState extends State<MyApp> {
   bool get isIOS => !kIsWeb && Platform.isIOS;
   bool get isMacOS => !kIsWeb && Platform.isMacOS;
   bool get isWindows => !kIsWeb && Platform.isWindows;
+  bool get isLinux => !kIsWeb && Platform.isLinux;
   bool get isWeb => kIsWeb;
+
+  /// Platforms where flutter_tts exposes TTS engines (on Linux, these are
+  /// Speech Dispatcher output modules such as espeak-ng).
+  bool get supportsEngines => isAndroid || isLinux;
 
   @override
   initState() {
@@ -112,7 +117,7 @@ class MyAppState extends State<MyApp> {
 
   Future<void> _getDefaults() async {
     if (kDebugMode) debugPrint('_getDefaults...');
-    if (isAndroid) await _getDefaultEngine();
+    if (supportsEngines) await _getDefaultEngine();
     if (kIsWeb) setState(() {}); // Tickle the UI
     await _getDefaultVoice();
   }
@@ -124,7 +129,7 @@ class MyAppState extends State<MyApp> {
   Future<dynamic> _getLanguages() async => await flutterTts.getLanguages;
 
   Future<void> _getDefaultEngine() async {
-    if (!isAndroid) return; // safety-check
+    if (!supportsEngines) return; // safety-check
     if (kDebugMode) debugPrint('_getDefaultEngine...');
     var e = await flutterTts.getDefaultEngine;
     if (e != null) {
@@ -409,7 +414,7 @@ class MyAppState extends State<MyApp> {
   }
 
   Widget _engineSection() {
-    if (isAndroid) {
+    if (supportsEngines) {
       if (engineItems.isNotEmpty) {
         return _enginesDropDownSection(<dynamic>[]);
       } else {

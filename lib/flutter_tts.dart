@@ -42,7 +42,7 @@ const String iosAudioModeVideoRecording = 'iosAudioModeVideoRecording';
 const String iosAudioModeVoiceChat = 'iosAudioModeVoiceChat';
 const String iosAudioModeVoicePrompt = 'iosAudioModeVoicePrompt';
 
-enum TextToSpeechPlatform { android, ios }
+enum TextToSpeechPlatform { android, ios, linux }
 
 /// Audio session category identifiers for iOS.
 ///
@@ -325,7 +325,8 @@ class SpeechRateValidRange {
   SpeechRateValidRange(this.min, this.normal, this.max, this.platform);
 }
 
-// Provides Platform specific TTS services (Android: TextToSpeech, IOS: AVSpeechSynthesizer)
+// Provides Platform specific TTS services (Android: TextToSpeech, IOS: AVSpeechSynthesizer,
+// Linux: Speech Dispatcher)
 class FlutterTts {
   static const MethodChannel _channel = MethodChannel('flutter_tts');
 
@@ -462,7 +463,8 @@ class FlutterTts {
   }
 
   /// [Future] which invokes the platform specific method for setEngine
-  /// ***Android supported only***
+  /// On Linux, engines are Speech Dispatcher output modules (e.g. "espeak-ng").
+  /// ***Android and Linux supported only***
   Future<dynamic> setEngine(String engine) async {
     await _channel.invokeMethod('setEngine', engine);
   }
@@ -473,7 +475,7 @@ class FlutterTts {
       await _channel.invokeMethod('setPitch', pitch);
 
   /// [Future] which invokes the platform specific method for setVoice
-  /// ***Android, iOS, and macOS supported only***
+  /// ***Android, iOS, macOS, and Linux supported only***
   Future<dynamic> setVoice(Map<String, String> voice) async =>
       await _channel.invokeMethod('setVoice', voice);
 
@@ -494,7 +496,8 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for getEngines
   /// Returns a list of installed TTS engines
-  /// ***Android supported only***
+  /// On Linux, these are Speech Dispatcher output modules.
+  /// ***Android and Linux supported only***
   Future<dynamic> get getEngines async {
     final engines = await _channel.invokeMethod('getEngines');
     return engines;
@@ -502,7 +505,7 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for getDefaultEngine
   /// Returns a `String` of the default engine name
-  /// ***Android supported only ***
+  /// ***Android and Linux supported only ***
   Future<dynamic> get getDefaultEngine async {
     final engineName = await _channel.invokeMethod('getDefaultEngine');
     return engineName;
@@ -519,7 +522,7 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for getVoices
   /// Returns a `List` of `Maps` containing a voice name and locale
   /// For iOS specifically, it also includes quality, gender, and identifier
-  /// ***Android, iOS, and macOS supported only***
+  /// ***Android, iOS, macOS, and Linux supported only***
   Future<dynamic> get getVoices async {
     final voices = await _channel.invokeMethod('getVoices');
     return voices;
@@ -565,7 +568,7 @@ class FlutterTts {
   /// 0 means QUEUE_FLUSH - Queue mode where all entries in the playback queue (media to be played and text to be synthesized) are dropped and replaced by the new entry.
   /// Queues are flushed with respect to a given calling app. Entries in the queue from other calls are not discarded.
   /// 1 means QUEUE_ADD - Queue mode where the new entry is added at the end of the playback queue.
-  /// ***Android supported only***
+  /// ***Android and Linux supported only***
   Future<dynamic> setQueueMode(int queueMode) async =>
       await _channel.invokeMethod('setQueueMode', queueMode);
 
