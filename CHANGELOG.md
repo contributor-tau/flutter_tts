@@ -1,5 +1,17 @@
 # ChangeLog
 
+## 4.3.0
+
+### Features
+
+- **Linux:** New Linux implementation using Speech Dispatcher: speak, stop, pause, voices,
+  languages, rate/volume/pitch, sentence-level progress events, queue mode, await speak
+  completion, and engines (Speech Dispatcher output modules). libspeechd is loaded at runtime,
+  so apps start (and report an error) on systems without it. See the README for Flatpak and
+  Snap setup.
+- Add `TextToSpeechPlatform.linux`. Code that switches exhaustively over
+  `TextToSpeechPlatform` needs a case for it.
+
 ## 4.2.5
 
 ### Fixes
