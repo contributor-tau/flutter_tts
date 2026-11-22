@@ -73,6 +73,10 @@ class TtsEngineTest : public ::testing::Test {
     engine_ = std::make_unique<TtsEngine>(&listener_);
     std::string error;
     if (!engine_->EnsureConnected(&error)) {
+      // CI sets this so that a broken setup fails instead of skipping.
+      if (g_getenv("FLUTTER_TTS_REQUIRE_SPEECHD") != nullptr) {
+        FAIL() << "speech-dispatcher not reachable: " << error;
+      }
       GTEST_SKIP() << "speech-dispatcher not reachable: " << error;
     }
   }

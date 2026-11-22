@@ -1,0 +1,52 @@
+name: linux
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          # Flutter's Linux toolchain.
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+          # Only needed to run the integration tests: the plugin itself loads
+          # libspeechd at runtime and doesn't need it to build.
+          sudo apt-get install -y speech-dispatcher speech-dispatcher-espeak-ng pulseaudio
+
+      - name: Analyze
+        run: |
+          flutter pub get
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib
+          cd example
+          flutter pub get
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib
+
+      - name: Build example
+        run: |
+          cd example
+          flutter build linux --debug
+
+      - name: Run native tests against speech-dispatcher
+        run: |
+          export XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg"
+          mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+          # There is no sound card: play into a null sink, which still plays
+          # at real-time speed so pause/stop timing is realistic.
+          pulseaudio --daemonize=yes --exit-idle-time=-1 -n \
+            --load="module-null-sink sink_name=nullsink" \
+            --load="module-native-protocol-unix"
+          pactl set-default-sink nullsink
+          # libspeechd starts speech-dispatcher on first use.
+          FLUTTER_TTS_REQUIRE_SPEECHD=1 \
+            example/build/linux/x64/debug/plugins/flutter_tts/flutter_tts_test

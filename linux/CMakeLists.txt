@@ -57,7 +57,7 @@ set(flutter_tts_bundled_libraries
 # Built when the application sets include_flutter_tts_tests (the example app
 # does). Run with: build/linux/<arch>/<mode>/plugins/flutter_tts/flutter_tts_test
 # The engine tests talk to a real speech-dispatcher and are skipped when none
-# is reachable.
+# is reachable (set FLUTTER_TTS_REQUIRE_SPEECHD=1 to fail instead).
 if (${include_${PROJECT_NAME}_tests})
 if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
 message("Unit tests require CMake 3.11.0 or later")
@@ -66,6 +66,9 @@ set(TEST_RUNNER "${PROJECT_NAME}_test")
 enable_testing()
 
 include(FetchContent)
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)  # Use extraction time for file timestamps.
+endif()
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
